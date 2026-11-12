@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Tasks</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
+    form { display: flex; gap: 8px; margin-bottom: 16px; }
+    input { flex: 1; padding: 8px; }
+    button { padding: 8px 14px; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; }
+    #status { color: #b00020; min-height: 1.2em; }
+  </style>
+</head>
+<body>
+  <h1>My Tasks</h1>
+  <form id="form">
+    <input id="title" placeholder="New task" required>
+    <button>Add</button>
+  </form>
+  <p id="status"></p>
+  <ul id="list"></ul>
+
+  <script>
+    const API = "__API_URL__";
+    const list = document.getElementById("list");
+    const statusEl = document.getElementById("status");
+
+    async function load() {
+      try {
+        const res = await fetch(API);
+        const tasks = await res.json();
+        list.innerHTML = "";
+        for (const t of tasks) {
+          const li = document.createElement("li");
+          li.textContent = t.title;
+          list.appendChild(li);
+        }
+        statusEl.textContent = "";
+      } catch (err) {
+        statusEl.textContent = "Could not reach the API: " + err;
+      }
+    }
+
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("title");
+      try {
+        await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: input.value }),
+        });
+        input.value = "";
+        load();
+      } catch (err) {
+        statusEl.textContent = "Could not add the task: " + err;
+      }
+    });
+
+    load();
+  </script>
+</body>
+</html>
